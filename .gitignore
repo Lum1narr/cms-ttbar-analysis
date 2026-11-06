@@ -137,6 +137,9 @@ celerybeat.pid
 *.rdb
 *.aof
 *.pid
+*.root
+**/ntuples-mc/
+ntuples-mc/
 
 # RabbitMQ
 mnesia/
