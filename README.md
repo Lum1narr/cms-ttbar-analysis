@@ -1,7 +1,7 @@
-# Відтворення результатів статті CMS Measurement of differential top-quark-pair production cross sections in pp collisions at √s = 7 TeV
+# Відтворення результатів статті CMS: Measurement of differential top-quark-pair production cross sections in pp collisions at √s = 7 TeV
 Стаття: https://arxiv.org/abs/1211.2220
 
-Мета: побудова нормованих диференціальних перерізів народження ttbar-пар за даними експерименту CMS та дослідження впливу стиснення самплів методом найближчого сусіду.
+Мета: побудова нормованих диференціальних перерізів народження ttbar-пар за даними експерименту CMS та дослідження впливу стиснення самплів методом найближчого сусіда.
 
 ## Розподіл завдань:
 - lepton_jets - виконавець Писарєв Лєван
