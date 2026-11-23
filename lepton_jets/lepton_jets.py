@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -82,6 +83,10 @@ def mass(p, p_bar):
 
     return np.sqrt((E_t + E_t_bar)**2 - p_tt)
 
+def rms(data_y, data_y_comp):
+    mask = data_y > 0
+    return np.sqrt(np.mean((data_y_comp[mask] / data_y[mask] - 1)**2))
+
 observable = [
     {
         "name": "pT_t",
@@ -111,6 +116,60 @@ observable = [
         "name": "m_tt",
         "func": mass,
         "is_pair":  True,
-        "xlabel": "m_tt, GeV"
+        "xlabel": "m_tt, GeV",
+        "log_scale": True,
+        "xlim": (345, 1600)
     }
 ]
+
+if __name__ == "__main__":
+    output = Path("plots")
+    output.mkdir(exist_ok=True)
+
+    for obs in observable:
+        pt = df[df["observable"] == obs["name"]]
+
+        x = (pt["bin_high"] + pt["bin_low"]) / 2
+        x_err = (pt["bin_high"] - pt["bin_low"]) / 2    
+
+        y = pt["value"]
+        y_total = pt["value"] * (pt["total"]/100)
+
+        bin = pt['bin_low']
+        bin = np.append(bin, pt['bin_high'].iloc[-1])
+        bin_width = bin[1:] - bin[:-1]
+
+        if obs["is_pair"]:
+            vals = obs["func"](data_t, data_t_bar)
+            vals_comp = obs["func"](data_t_comp, data_t_bar_comp)
+            w_comp = weight_t
+        else:
+            vals = obs["func"](data_all)
+            vals_comp = obs["func"](data_all1)
+            w_comp = weight
+
+        count, _ = np.histogram(vals, bins=bin)
+        data_y = count / (len(vals) * bin_width)
+
+        count_comp, _ = np.histogram(vals_comp, bins=bin, weights=w_comp)
+        data_y_comp = count_comp / (np.sum(w_comp) * bin_width)
+
+        print(rms(data_y, data_y_comp))
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.set_xlabel(obs["xlabel"])
+        ax.set_ylabel("sigma * 10^(-3)")
+
+        if obs.get("log_scale"):
+            ax.set_yscale("log")
+        if "xlim" in obs:
+            ax.set_xlim(obs["xlim"])
+
+        ax.errorbar(x, y, xerr=x_err, yerr=y_total, fmt='o', color='black', capsize=0, label='Data')
+        ax.stairs(data_y * 1000, bin, color='red', label='MadGraph')
+        ax.stairs(data_y_comp * 1000, bin, color='blue', label='MadGraph comp')
+
+        ax.legend(loc='upper right', frameon=False, fontsize=12)
+
+        plt.savefig(output / f"{obs['name']}.png", dpi=150, bbox_inches="tight")
+        plt.close(fig)
